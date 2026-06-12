@@ -1,1 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Banco SecurePass - Gerador de Senhas Seguras</title>
 
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#041c32,#04293a,#064663);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    color:white;
+}
+
+.container{
+    width:90%;
+    max-width:600px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.15);
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 15px 40px rgba(0,0,0,.4);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo h1{
+    color:#00d4ff;
+    font-size:2rem;
+}
+
+.logo p{
+    color:#b8dfff;
+}
+
+.card{
+    background:rgba(255,255,255,.05);
+    border-radius:15px;
+    padding:20px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:600;
+}
+
+input[type="range"]{
+    width:100%;
+}
+
+.length{
+    text-align:center;
+    margin:10px 0 20px;
+    font-size:1.2rem;
+    color:#00d4ff;
+}
+
+.options{
+    display:grid;
+    gap:10px;
+    margin-bottom:20px;
+}
+
+.option{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+button{
+    width:100%;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    background:#00d4ff;
+    color:#001219;
+    font-weight:bold;
+    cursor:pointer;
+    transition:.3s;
+}
+
+button:hover{
+    background:#41e3ff;
+}
+
+.password-box{
+    margin-top:20px;
+    display:flex;
+    gap:10px;
+}
+
+.password-box input{
+    flex:1;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#02141f;
+    color:#00ffae;
+    font-size:1rem;
+    font-weight:bold;
+}
+
+.copy{
+    width:auto;
+    padding:12px 18px;
+}
+
+.security{
+    margin-top:20px;
+}
+
+.bar{
+    height:10px;
+    background:#1a2d3b;
+    border-radius:20px;
+    overflow:hidden;
+}
+
+.fill{
+    height:100%;
+    width:0%;
+    transition:.4s;
+}
+
+.status{
+    margin-top:8px;
+    text-align:center;
+    font-weight:bold;
+}
+
+.footer{
+    margin-top:20px;
+    text-align:center;
+    color:#9bc7d8;
+    font-size:.9rem;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="logo">
+        <h1>🏦 Banco SecurePass</h1>
+        <p>Gerador de Senhas com Segurança Bancária</p>
+    </div>
+
+    <div class="card">
+
+        <label>Tamanho da Senha</label>
+
+        <input type="range" min="8" max="32" value="16" id="length">
+
+        <div class="length">
+            <span id="lengthValue">16</span> caracteres
+        </div>
+
+        <div class="options">
+            <label class="option">
+                <input type="checkbox" id="upper" checked>
+                Letras Maiúsculas
+            </label>
+
+            <label class="option">
+                <input type="checkbox" id="lower" checked>
+                Letras Minúsculas
+            </label>
+
+            <label class="option">
+                <input type="checkbox" id="numbers" checked>
+                Números
+            </label>
+
+            <label class="option">
+                <input type="checkbox" id="symbols" checked>
+                Símbolos
+            </label>
+        </div>
+
+        <button onclick="gerarSenha()">
+            Gerar Senha Segura
+        </button>
+
+        <div class="password-box">
+            <input type="text" id="senha" readonly>
+            <button class="copy" onclick="copiarSenha()">
+                Copiar
+            </button>
+        </div>
+
+        <div class="security">
+            <div class="bar">
+                <div class="fill" id="fill"></div>
+            </div>
+            <div class="status" id="status">
+                Aguardando geração...
+            </div>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Criptografia inspirada em padrões modernos de autenticação.
+    </div>
+
+</div>
+
+<script>
+
+const slider = document.getElementById("length");
+const lengthValue = document.getElementById("lengthValue");
+
+slider.addEventListener("input", () => {
+    lengthValue.textContent = slider.value;
+});
+
+function numeroSeguro(max){
+    const array = new Uint32Array(1);
+    crypto.getRandomValues(array);
+    return array[0] % max;
+}
+
+function gerarSenha(){
+
+    let chars = "";
+
+    if(document.getElementById("upper").checked)
+        chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    if(document.getElementById("lower").checked)
+        chars += "abcdefghijklmnopqrstuvwxyz";
+
+    if(document.getElementById("numbers").checked)
+        chars += "0123456789";
+
+    if(document.getElementById("symbols").checked)
+        chars += "!@#$%^&*()_+-=[]{}<>?";
+
+    if(chars.length === 0){
+        alert("Selecione pelo menos uma opção.");
+        return;
+    }
+
+    const tamanho = parseInt(slider.value);
+
+    let senha = "";
+
+    for(let i=0;i<tamanho;i++){
+        senha += chars[numeroSeguro(chars.length)];
+    }
+
+    document.getElementById("senha").value = senha;
+
+    avaliarForca(senha);
+}
+
+function avaliarForca(senha){
+
+    let score = 0;
+
+    if(senha.length >= 8) score += 20;
+    if(senha.length >= 12) score += 20;
+    if(/[A-Z]/.test(senha)) score += 20;
+    if(/[a-z]/.test(senha)) score += 15;
+    if(/[0-9]/.test(senha)) score += 15;
+    if(/[^A-Za-z0-9]/.test(senha)) score += 10;
+
+    const fill = document.getElementById("fill");
+    const status = document.getElementById("status");
+
+    fill.style.width = score + "%";
+
+    if(score < 40){
+        fill.style.background = "#ff3b3b";
+        status.textContent = "🔴 Fraca";
+    }
+    else if(score < 70){
+        fill.style.background = "#ffb703";
+        status.textContent = "🟡 Média";
+    }
+    else if(score < 90){
+        fill.style.background = "#00d4ff";
+        status.textContent = "🔵 Forte";
+    }
+    else{
+        fill.style.background = "#00ff95";
+        status.textContent = "🟢 Segurança Bancária";
+    }
+}
+
+function copiarSenha(){
+
+    const campo = document.getElementById("senha");
+
+    if(!campo.value){
+        alert("Gere uma senha primeiro.");
+        return;
+    }
+
+    navigator.clipboard.writeText(campo.value);
+
+    alert("Senha copiada com sucesso.");
+}
+
+gerarSenha();
+
+</script>
+
+</body>
+</html>
